@@ -1,6 +1,7 @@
 'use strict'
 const Database = use('Database')
 const Hash = use('Hash')
+const Validator = use('Validator')
 function numberTypeParamValidator(number) {
     if(Number.isNaN(parseInt(number))) 
         return { error:  `param: ${number} is not support, Pleasr use number type param instead. ` }
@@ -8,7 +9,7 @@ function numberTypeParamValidator(number) {
 }
 class StudentController {
     async index(){
-        const data = await Database.table('students')
+        const student = await Database.table('students')
         return { status : 200 , error : undefined, data : student}
     }
 
@@ -23,24 +24,34 @@ class StudentController {
         .first()
         return{ status: 200, error : undefined, data : student ||{} }
     }
+    async showGroup({request}){
+        const{ id } =request.params
+        const student = await Database
+        .table('students')
+        .where("student_id",id)
+        .innerJoin('groups','student.group_id','groups.group_id')
+        .first()
+        return{ status: 200, error : undefined, data : student ||{} }
+    }
     async store ({request}){
         const {first_name,last_name,email,password,group_id} = request.body
-        const missingKeys=[]
-        if(!first_name) missingKeys.push('first_name')
-        if(!last_name) missingKeys.push('first_name')
-        if(!email) missingKeys.push('first_name')
-        if(!password) missingKeys.push('first_name')
-        if(!group_id) missingKeys.push('first_name')
-        if(missingKeys.length)
-            return {status: 422, error:`${missingKeys} is missing.`, data:undefined}
+        const rules ={
+                first_name:'required',
+                last_name:'required',
+                email:'required|email|unique:teachers,email',
+                password:'required|min:8'
+         }
+        const validattion = await Validator.validateAll(request.body,rules)
+        if(validattion.fails())
+        return { status: 422 ,error:validattion.messages(),data:undefined}
 
-        
         const hashedPassword = await Hash.make(password)
         const student = await Database
         .table('students')
         .insert({first_name,last_name,email,password:hashedPassword,group_id})
-        return {status : 200,error : undefined , data : {first_name,last_name,email,password,group_id} }
+        return {status : 200,error : undefined , data : {student} }
     }
+    
     async update({request}){
         const {body,params}=request
         const {id}=params

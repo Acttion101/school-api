@@ -1,6 +1,5 @@
 'use strict'
 const Database = use('Database')
-const Hash = use('Hash')
 const Validator = use('Validator')
 function numberTypeParamValidator(number) {
     if(Number.isNaN(parseInt(number))) 
@@ -24,25 +23,18 @@ class GroupController {
         return{ status: 200, error : undefined, data : group ||{} }
     }
     async store ({request}){
-        const {group_id,name} = request.body
+        const {name} = request.body
 
         const rules ={
             name:'required',
-            
         }
-        const missingKeys=[]
-        if(!group_id) missingKeys.push('name')
-        if(!name) missingKeys.push('name')
-       
-        if(missingKeys.length)
-            return {status: 422, error:`${missingKeys} is missing.`, data:undefined}
-
-        
-        const hashedPassword = await Hash.make(password)
-        const group = await Database
+        const validattion = await Validator.validateAll(request.body,rules)
+        if(validattion.fails())
+            return { status: 422 ,error:validattion.messages(),data:undefined}
+            const group = await Database
         .table('groups')
-        .insert({group_id,name})
-        return {status : 200,error : undefined , data : {group_id,name} }
+        .insert({name})
+        return {status : 200,error : undefined , data : {group} }
     }
     async update({request}){
         const {body,params}=request

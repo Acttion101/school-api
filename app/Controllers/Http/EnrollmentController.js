@@ -16,7 +16,25 @@ class EnrollmentController {
         .from('enrollments')
         .where("enrollment_id",id)
         .first()
-        return{ status: 200, error : undefined, data : Enrollment ||{} }
+        return{ status: 200, error : undefined, data : enrollment ||{} }
+    }
+    async showStuent({request}){
+        const{ id } =request.params
+        const student = await Database
+        .table('enrollments')
+        .where("enrollmentt_id",id)
+        .innerJoin('students','enrollments.student_id','students.student_id')
+        .first()
+        return{ status: 200, error : undefined, data : student ||{} }
+    }
+    async showSubject({request}){
+        const{ id } =request.params
+        const Subject = await Database
+        .table('enrollments')
+        .where("enrollmentt_id",id)
+        .innerJoin('Subjects','enrollments.Subject_id','Subjects.Subject_id')
+        .first()
+        return{ status: 200, error : undefined, data : Subject ||{} }
     }
     async store ({request}){
         const {enrollment_id,mark,mark_date,update_at} = request.body
@@ -26,11 +44,10 @@ class EnrollmentController {
            update:'required',
             
         }
-        const hashedPassword = await Hash.make(password)
         const enrollment = await Database
         .table('enrollments')
         .insert({enrollment_id,mark,mark_date,update_at})
-        return {status : 200,error : undefined , data : {enrollment_id,mark,mark_date,update_at} }
+        return {status : 200,error : undefined , data : {enrollment} }
     }
     async update({request}){
         const {body,params}=request
