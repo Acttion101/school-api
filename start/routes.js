@@ -24,6 +24,7 @@ Route.group(()=>{
   Route.resource('/teachers','TeacherController')
 
   Route.resource('/students','StudentController')
+  Route.get('/students/:id/group','StudentController.showGroup')
   // Route.get('/students','StudentController.index')
   // Route.get('/students/:id','StuentController.show')
   // Route.post('tstudents','StuentController.store')
@@ -40,6 +41,8 @@ Route.group(()=>{
   // Route.post('groups','GroupController.store')
 
   Route.resource('/enrollments','EnrollmentController')
+  Route.get('/enrollments/:id/stuent','EnrollmentController.showStuent')
+  Route.get('/enrollments/:id/subject','EnrollmentController.showSubject')
   // Route.get('/Enrollments','EnrollmentController.index')
   // Route.get('/Enrollments/:id','EnrollmentController.show')
   // Route.post('Enrollments','EnrollmentController.store')
