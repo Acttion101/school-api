@@ -1,6 +1,7 @@
 'use strict'
 const Database = use('Database')
 const Hash = use('Hash')
+const Validator = use('Validator')
 class EnrollmentController {
     async index(){
         const data = await Database.table('enrollments')
@@ -19,21 +20,45 @@ class EnrollmentController {
     }
     async store ({request}){
         const {enrollment_id,mark,mark_date,update_at} = request.body
-        const missingKeys=[]
-        if(!enrollment_id) missingKeys.push('mark')
-        if(!mark) missingKeys.push('mark')
-        if(mark_date) missingKeys.push('mark')
-        if(update_at) missingKeys.push('mark')
-       
-        if(missingKeys.length)
-            return {status: 422, error:`${missingKeys} is missing.`, data:undefined}
-
-        
+        const rules ={
+           mark:'required',
+            mark_date:'required',
+           update:'required',
+            
+        }
         const hashedPassword = await Hash.make(password)
         const enrollment = await Database
         .table('enrollments')
         .insert({enrollment_id,mark,mark_date,update_at})
         return {status : 200,error : undefined , data : {enrollment_id,mark,mark_date,update_at} }
+    }
+    async update({request}){
+        const {body,params}=request
+        const {id}=params
+        const {mark,mark_date,update_at,subject_id,student_id} = body 
+
+        const enrollmentId = await Database
+        .table('enrollments')
+        .where({enrollment_id:id})
+        .update({mark,mark_date,update_at,subject_id,student_id})
+
+        const enrollment = await Database 
+        .table('enrollments')
+        .where({mark,mark_date,update_at,subject_id,student_id:subjectId})
+        .first()
+
+        return{status : 200,error : undefined , data : { enrollment } }
+    }
+
+    async destroy({request}){
+        const{id}=request.params
+
+        await Database
+        .table('subjects')
+        .where({subject_id,teacher_id:id})
+        .delete()
+
+        return {status : 200,error : undefined , data : {massage : 'success'} }
     }
 }
 

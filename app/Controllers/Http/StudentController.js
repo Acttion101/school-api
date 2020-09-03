@@ -41,6 +41,34 @@ class StudentController {
         .insert({first_name,last_name,email,password:hashedPassword,group_id})
         return {status : 200,error : undefined , data : {first_name,last_name,email,password,group_id} }
     }
+    async update({request}){
+        const {body,params}=request
+        const {id}=params
+        const {first_name,last_name,email,group_id} = body 
+
+        const studentId = await Database
+        .table('students')
+        .where({student_id:id})
+        .update({first_name,last_name,email,group_id})
+
+        const student = await Database 
+        .table('students')
+        .where({student_id:studentId})
+        .first()
+
+        return{status : 200,error : undefined , data : { student } }
+    }
+
+    async destroy({request}){
+        const{id}=request.params
+
+        await Database
+        .table('students')
+        .where({student_id:id})
+        .delete()
+
+        return {status : 200,error : undefined , data : {massage : 'success'} }
+    }
 }
 
 module.exports = StudentController
